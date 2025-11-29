@@ -1,6 +1,8 @@
 package main;
 
-
+/**
+ * 
+ */
 public class HashMap {
     private static final int DEFAULT_SIZE = 16;
     private static final double DEFAULT_LF = .6;
@@ -113,11 +115,22 @@ public class HashMap {
             rehash();
     }
 
+    /**
+     * Given a GraphNode as the key this returns the entry that has this GraphNode and an associated value in the map.
+     * @param key GraphNode to search for map entry with
+     * @return the entry that this GraphNode is the key for
+     */
     public Entry getEntry(GraphNode key){
         Entry keysEntry = map[hashFunction(this.map, key.getId(), mapSize)];
         return keysEntry;
     }
 
+    /**
+     * Given a GraphNode this returns true if the map already contains this key in an entry and false if there is no entry in the map with this
+     * GraphNode as the key.
+     * @param g GraphNode to check if it is in the map
+     * @return true if GraphNode is in the map, false if not
+     */
     public boolean hasKey(GraphNode g){
         boolean containsKey = false;
         if(map[hashFunction(this.map, g.getId(), mapSize)] != null){
@@ -126,6 +139,10 @@ public class HashMap {
         return containsKey;
     }
 
+    /**
+     * Returns the number of Entry objects currently being stored in the map.
+     * @return number of Entry objects in map
+     */
     public int numEntries(){
         return entries;
     }
