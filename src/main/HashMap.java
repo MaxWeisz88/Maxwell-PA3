@@ -28,7 +28,16 @@ public class HashMap {
         entries = 0;
     }
 
-    public int hashFunction(String key, int size){
+    /**
+     * Hash function, given a UUID string this will return an int that is unique to that string. If there is a collision with two different keys 
+     * returning the same index, uses quadratic probing to find a free index in the map. Has a map field to put an array of Entry objects so that
+     * the rehash function can add to a new larger map without having out of bounds index errors in the old map.
+     * @param map the map that is being retrieved from or setting new entries in
+     * @param key the UUID string corresponding to an entry
+     * @param size the table size of the map being used
+     * @return unique index for this key in the map
+     */
+    public int hashFunction(Entry[] map, String key, int size){
         int result = 0;
         int digits = 0;
         char[] charArr = key.toCharArray();
@@ -38,13 +47,18 @@ public class HashMap {
         }
         result = digits % size;
         int count = 1;
-        while(result < size && map[result] != null && !map[result].getKey().getId().equals(key)){//Checks if collision and not a node being searched for
+        while(result < size && map[result] != null && !map[result].getKey().getId().equals(key)){
+            //Checks if there is a collision and it is not a node being searched for
             result = (result + count * count) % size;
             count++;
         }
         return result;
     }
 
+    /**
+     * Creates a new map that is double the size of the current map, then adds the entries to the new map using the new size in the hash function.
+     * Also updates the array tracking the GraphNode keys, and size fields.
+     */
     private void rehash(){
         int biggerMapSize = mapSize * 2;
         Entry[] temp = new Entry[biggerMapSize];
@@ -54,8 +68,7 @@ public class HashMap {
             if(node == null){
                 break;
             }
-            //need to find out way to make this work with biggerMapSize so it probes correctly
-            temp[hashFunction(node.getId(), mapSize)] = new Entry(node, getValue(node));
+            temp[hashFunction(temp, node.getId(), biggerMapSize)] = new Entry(node, getValue(node));
             tempKeys[i] = node;
             i++;
         }
@@ -64,6 +77,11 @@ public class HashMap {
         keys = tempKeys;
     }
 
+    /**
+     * Given a GraphNode this retrieves the value (representing index of GraphNode in heap array) associated with it in the map.
+     * @param g GraphNode to get value for
+     * @return the value in the entry with this GraphNode
+     */
     public int getValue(GraphNode g){
         int value = -1;
         if(hasKey(g)){
@@ -73,29 +91,36 @@ public class HashMap {
         return value;
     }
 
+    /**
+     * Checks if the key being searched for is already in the map, if it is this changes the Entry value field to the value passed in the second 
+     * parameter. If it is not already in the map then it gets the hash value for the key and puts the key with the value param in an entry at 
+     * that index in the map. 
+     * @param key GraphNode key whose corresponding Entry's value is being changed or added
+     * @param value value associated with the GraphNode key
+     */
     public void set(GraphNode key, int value){
-        if(currentLF >= loadFactor)
-            rehash();
         if(hasKey(key)){
             Entry entry = getEntry(key);
             entry.setValue(value);
-        }else{
-            int i = hashFunction(key.getId(), mapSize);
+        } else{
+            int i = hashFunction(this.map, key.getId(), mapSize);
             map[i] = new Entry(key, value);
             keys[entries] = key;
             entries += 1;
             currentLF = (double)entries/mapSize;
         }
+        if(currentLF >= loadFactor)
+            rehash();
     }
 
     public Entry getEntry(GraphNode key){
-        Entry keysEntry = map[hashFunction(key.getId(), mapSize)];
+        Entry keysEntry = map[hashFunction(this.map, key.getId(), mapSize)];
         return keysEntry;
     }
 
     public boolean hasKey(GraphNode g){
         boolean containsKey = false;
-        if(map[hashFunction(g.getId(), mapSize)] != null){
+        if(map[hashFunction(this.map, g.getId(), mapSize)] != null){
             containsKey = true;
         }
         return containsKey;
